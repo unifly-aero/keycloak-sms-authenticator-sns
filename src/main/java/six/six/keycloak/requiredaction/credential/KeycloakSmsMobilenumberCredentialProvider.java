@@ -126,21 +126,36 @@ public class KeycloakSmsMobilenumberCredentialProvider implements CredentialProv
         if (!creds.isEmpty()) user.getCachedWith().put(CACHE_KEY, creds.get(0));
     }
 
-	@Override
+    @Override
+    public void close() {
+
+    }
+
+    @Override
 	public String getType() {
 		return MOBILE_NUMBER;
 	}
 
 
 	@Override
-	public void deleteCredential(RealmModel realm, UserModel user, String credentialId) {
-		session.userCredentialManager().removeStoredCredential(realm, user, credentialId);
-		
-	}
+	public boolean deleteCredential(RealmModel realm, UserModel user, String credentialId) {
+		return session.userCredentialManager().removeStoredCredential(realm, user, credentialId);
+    }
 
 	@Override
 	public CredentialModel getCredentialFromModel(CredentialModel model) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+    @Override
+    public CredentialModel getDefaultCredential(KeycloakSession session, RealmModel realm, UserModel user) {
+        return null;
+    }
+
+    @Override
+    public CredentialTypeMetadata getCredentialTypeMetadata(CredentialTypeMetadataContext credentialTypeMetadataContext) {
+        CredentialTypeMetadata metadata = CredentialTypeMetadata.builder().removeable(false).category(CredentialTypeMetadata.Category.TWO_FACTOR).displayName("SMS Authentication").type("OTP").helpText("Help").build(session);
+        return metadata;
+    }
 }

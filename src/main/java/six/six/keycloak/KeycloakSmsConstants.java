@@ -13,6 +13,9 @@ public class KeycloakSmsConstants {
     public static final String CONF_PRP_SMS_CODE_LENGTH = "sms-auth.code.length";
     public static final String CONF_PRP_SMS_TEXT = "sms-auth.msg.text";
 
+    //OPENVOX Port
+    public static final String CONF_PRP_OPENVOX_PORT = "sms-auth.openvox.port";
+
     // Gateway
     public static final String CONF_PRP_SMS_GATEWAY = "sms-auth.sms.gateway";
     public static final String CONF_PRP_SMS_GATEWAY_ENDPOINT = "sms-auth.sms.gateway.endpoint";

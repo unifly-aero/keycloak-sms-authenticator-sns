@@ -81,7 +81,7 @@ public class KeycloakSmsAuthenticatorFactory implements AuthenticatorFactory, Co
         // Credential
         property = new ProviderConfigProperty();
         property.setName(KeycloakSmsConstants.CONF_PRP_SMS_CLIENTTOKEN);
-        property.setLabel("Client id");
+        property.setLabel("Username");
         property.setType(ProviderConfigProperty.STRING_TYPE);
         property.setHelpText("AWS Client Token or LyraSMS User. Not used for GOV.UK Notify");
         configProperties.add(property);
@@ -90,6 +90,14 @@ public class KeycloakSmsAuthenticatorFactory implements AuthenticatorFactory, Co
         property.setName(KeycloakSmsConstants.CONF_PRP_SMS_CLIENTSECRET);
         property.setLabel("Client secret");
         property.setHelpText("AWS Client Secret or LyraSMS Password. Not used for GOV.UK Notify");
+        property.setType(ProviderConfigProperty.STRING_TYPE);
+        configProperties.add(property);
+
+        //OPENVOX Port
+        property = new ProviderConfigProperty();
+        property.setName(KeycloakSmsConstants.CONF_PRP_OPENVOX_PORT);
+        property.setLabel("OpenVOX Port");
+        property.setHelpText("The SMS Port for OpenVOX. Only used for OpenVOX.");
         property.setType(ProviderConfigProperty.STRING_TYPE);
         configProperties.add(property);
 
@@ -116,7 +124,6 @@ public class KeycloakSmsAuthenticatorFactory implements AuthenticatorFactory, Co
         property.setLabel("Ask for mobile number");
         property.setHelpText("Enable access and ask for mobile number if it isn't defined");
         configProperties.add(property);
-
 
     }
 

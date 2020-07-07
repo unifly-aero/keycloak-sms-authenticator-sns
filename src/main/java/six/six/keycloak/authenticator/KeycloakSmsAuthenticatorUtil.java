@@ -17,6 +17,7 @@ import six.six.gateway.SMSService;
 import six.six.gateway.aws.snsclient.SnsNotificationService;
 import six.six.gateway.govuk.notify.NotifySMSService;
 import six.six.gateway.lyrasms.LyraSMSService;
+import six.six.gateway.openvox.OpenVoxNotificationService;
 import six.six.keycloak.EnvSubstitutor;
 import six.six.keycloak.KeycloakSmsConstants;
 
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Created by joris on 18/11/2016.
@@ -138,24 +140,17 @@ public class KeycloakSmsAuthenticatorUtil {
 
     public static String getMessage(AuthenticationFlowContext context, String key){
         String result=null;
-        try {
-            ThemeProvider themeProvider = context.getSession().getProvider(ThemeProvider.class, "extending");
-            Theme currentTheme = themeProvider.getTheme(context.getRealm().getLoginTheme(), Theme.Type.LOGIN);
-            Locale locale = context.getSession().getContext().resolveLocale(context.getUser());
-            result = currentTheme.getMessages(locale).getProperty(key);
-        }catch (IOException e){
-            logger.warn(key + "not found in messages");
-        }
-        return result;
-    }
 
-    public static String getMessage(RequiredActionContext context, String key){
-        String result=null;
         try {
-            ThemeProvider themeProvider = context.getSession().getProvider(ThemeProvider.class, "extending");
-            Theme currentTheme = themeProvider.getTheme(context.getRealm().getLoginTheme(), Theme.Type.LOGIN);
+            ThemeProvider themeProvider = context.getSession().getProvider(ThemeProvider.class, "folder");
+
+            Theme currentTheme = themeProvider.getTheme(/*context.getRealm().getLoginTheme()*/ "base", Theme.Type.LOGIN);
             Locale locale = context.getSession().getContext().resolveLocale(context.getUser());
+
             result = currentTheme.getMessages(locale).getProperty(key);
+
+            System.err.println("ALIVSE");
+
         }catch (IOException e){
             logger.warn(key + "not found in messages");
         }
@@ -177,6 +172,7 @@ public class KeycloakSmsAuthenticatorUtil {
         String endpoint = EnvSubstitutor.envSubstitutor.replace(getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_GATEWAY_ENDPOINT));
         boolean isProxy = getConfigBoolean(config, KeycloakSmsConstants.PROXY_ENABLED);
 
+
         // GOV.UK Notify properties
         String notifyApiKey = System.getenv(KeycloakSmsConstants.NOTIFY_API_KEY);
         String notifyTemplate = System.getenv(KeycloakSmsConstants.NOTIFY_TEMPLATE_ID);
@@ -184,6 +180,10 @@ public class KeycloakSmsAuthenticatorUtil {
         // Create the SMS message body
         String template = getMessage(context, KeycloakSmsConstants.CONF_PRP_SMS_TEXT);
         String smsText = createMessage(template, code, mobileNumber);
+
+        //OpenVOX properties
+        String openVOXport = getConfigString(config, KeycloakSmsConstants.CONF_PRP_OPENVOX_PORT, "1");
+
 
         boolean result;
         SMSService smsService;
@@ -196,10 +196,12 @@ public class KeycloakSmsAuthenticatorUtil {
                 case GOVUK_NOTIFY:
                     smsService = new NotifySMSService(notifyApiKey, notifyTemplate);
                     break;
+                case OPENVOX:
+                    smsService = new OpenVoxNotificationService(endpoint, openVOXport);
+                    break;
                 default:
                     smsService = new SnsNotificationService();
             }
-
             result=smsService.send(checkMobileNumber(setDefaultCountryCodeIfZero(mobileNumber, getMessage(context, KeycloakSmsConstants.MSG_MOBILE_PREFIX_DEFAULT), getMessage(context, KeycloakSmsConstants.MSG_MOBILE_PREFIX_CONDITION))), smsText, smsUsr, smsPwd);
           return result;
        } catch(Exception e) {

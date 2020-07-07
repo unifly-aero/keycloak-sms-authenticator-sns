@@ -34,7 +34,6 @@ public class KeycloakSmsAuthenticatorCredentialProvider implements CredentialPro
         if (user instanceof CachedUserModel) {
             CachedUserModel cached = (CachedUserModel) user;
             secret = (CredentialModel) cached.getCachedWith().get(CACHE_KEY);
-
         } else {
             List<CredentialModel> creds = session.userCredentialManager().getStoredCredentialsByType(realm, user, KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE);
             if (!creds.isEmpty()) secret = creds.get(0);
@@ -67,7 +66,6 @@ public class KeycloakSmsAuthenticatorCredentialProvider implements CredentialPro
         if (!KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE.equals(credentialType)) return;
         session.userCredentialManager().disableCredentialType(realm, user, credentialType);
         session.userCache().evict(realm, user);
-
     }
 
     @Override
@@ -116,8 +114,8 @@ public class KeycloakSmsAuthenticatorCredentialProvider implements CredentialPro
 	}
 
 	@Override
-	public void deleteCredential(RealmModel realm, UserModel user, String credentialId) {
-		getCredentialStore().removeStoredCredential(realm, user, credentialId);
+	public boolean deleteCredential(RealmModel realm, UserModel user, String credentialId) {
+		return getCredentialStore().removeStoredCredential(realm, user, credentialId);
 	}
 
 	@Override
@@ -125,7 +123,13 @@ public class KeycloakSmsAuthenticatorCredentialProvider implements CredentialPro
 		return SmsOtpCredentialModel.createFromCredentialModel(model);
 	}
 
-	@Override
+    @Override
+    public CredentialTypeMetadata getCredentialTypeMetadata(CredentialTypeMetadataContext credentialTypeMetadataContext) {
+        CredentialTypeMetadata metadata = CredentialTypeMetadata.builder().removeable(false).category(CredentialTypeMetadata.Category.TWO_FACTOR).helpText("Help").displayName("SMS Authentication").type("otp").build(session);
+        return metadata;
+    }
+
+    @Override
 	public CredentialModel createCredential(RealmModel realm, UserModel user, SmsOtpCredentialModel credentialModel) {
 		if (credentialModel.getCreatedDate() == null) {
             credentialModel.setCreatedDate(Time.currentTimeMillis());

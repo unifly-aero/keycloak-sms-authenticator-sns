@@ -9,12 +9,7 @@ import org.keycloak.authentication.authenticators.challenge.BasicAuthAuthenticat
 import org.keycloak.common.util.Time;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.credential.CredentialProvider;
-import org.keycloak.models.AuthenticationExecutionModel;
-import org.keycloak.models.AuthenticatorConfigModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserCredentialModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import six.six.keycloak.KeycloakSmsConstants;
 import six.six.keycloak.MobileNumberHelper;
 import six.six.keycloak.authenticator.credential.KeycloakSmsAuthenticatorCredentialProvider;
@@ -66,6 +61,8 @@ public class KeycloakSmsAuthenticator extends BasicAuthAuthenticator implements 
         UserModel user = context.getUser();
         AuthenticatorConfigModel config = context.getAuthenticatorConfig();
 
+        System.err.println("IS NULL? " + (config == null));
+
         boolean onlyForVerification=KeycloakSmsAuthenticatorUtil.getConfigBoolean(config, KeycloakSmsConstants.MOBILE_VERIFICATION_ENABLED);
 
         String mobileNumber =getMobileNumber(user);
@@ -75,27 +72,27 @@ public class KeycloakSmsAuthenticator extends BasicAuthAuthenticator implements 
             if (mobileNumber != null) {
                 // The mobile number is configured --> send an SMS
                 long nrOfDigits = KeycloakSmsAuthenticatorUtil.getConfigLong(config, KeycloakSmsConstants.CONF_PRP_SMS_CODE_LENGTH, 8L);
-                logger.debug("Using nrOfDigits " + nrOfDigits);
+                logger.info("Using nrOfDigits " + nrOfDigits);
 
 
                 long ttl = KeycloakSmsAuthenticatorUtil.getConfigLong(config, KeycloakSmsConstants.CONF_PRP_SMS_CODE_TTL, 10 * 60L); // 10 minutes in s
 
-                logger.debug("Using ttl " + ttl + " (s)");
+                logger.info("Using ttl " + ttl + " (s)");
 
                 String code = KeycloakSmsAuthenticatorUtil.getSmsCode(nrOfDigits);
 
                 storeSMSCode(context, code, new Date().getTime() + (ttl * 1000)); // s --> ms
+
                 Response challenge = context.form().createForm("sms-validation.ftl");
-                context.challenge(challenge);
-//                if (KeycloakSmsAuthenticatorUtil.sendSmsCode(mobileNumber, code, context)) {
-//                    Response challenge = context.form().createForm("sms-validation.ftl");
-//                    context.challenge(challenge);
-//                } else {
-//                    Response challenge = context.form()
-//                            .setError("sms-auth.not.send")
-//                            .createForm("sms-validation-error.ftl");
-//                    context.failureChallenge(AuthenticationFlowError.INTERNAL_ERROR, challenge);
-//                }
+//                context.challenge(challenge);
+                if (KeycloakSmsAuthenticatorUtil.sendSmsCode(mobileNumber, code, context)) {
+                    context.challenge(challenge);
+                } else {
+                    Response challenge2 = context.form()
+                            .setError("sms-auth.not.send")
+                            .createForm("sms-validation-error.ftl");
+                    context.failureChallenge(AuthenticationFlowError.INTERNAL_ERROR, challenge2);
+                }
             } else {
                 boolean isAskingFor=KeycloakSmsAuthenticatorUtil.getConfigBoolean(config, KeycloakSmsConstants.MOBILE_ASKFOR_ENABLED);
                 if(isAskingFor){
@@ -180,6 +177,16 @@ public class KeycloakSmsAuthenticator extends BasicAuthAuthenticator implements 
         credentials.setType(KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE);
         credentials.setCredentialData(code);
 
+        //Delete previously stored credentials Data of SMS OPT for this user
+        UserCredentialManager credentialManager = context.getSession().userCredentialManager();
+
+        List<CredentialModel> stored = credentialManager.getStoredCredentialsByType(context.getRealm(), context.getUser(), KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE);
+        stored.addAll(credentialManager.getStoredCredentialsByType(context.getRealm(), context.getUser(), KeycloakSmsConstants.USR_CRED_MDL_SMS_EXP_TIME));
+
+        for(CredentialModel credentail: stored) {
+            credentialManager.removeStoredCredential(context.getRealm(), context.getUser(), credentail.getId());
+        }
+
         context.getSession().userCredentialManager().createCredential(context.getRealm(), context.getUser(), credentials);
 
         credentials.setType(KeycloakSmsConstants.USR_CRED_MDL_SMS_EXP_TIME);
@@ -191,7 +198,7 @@ public class KeycloakSmsAuthenticator extends BasicAuthAuthenticator implements 
     protected CODE_STATUS validateCode(AuthenticationFlowContext context) {
         CODE_STATUS result = CODE_STATUS.INVALID;
 
-        logger.debug("validateCode called ... ");
+        logger.info("validateCode called ... ");
         MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();
         String enteredCode = formData.getFirst(KeycloakSmsConstants.ANSW_SMS_CODE);
         KeycloakSession session = context.getSession();
@@ -199,24 +206,26 @@ public class KeycloakSmsAuthenticator extends BasicAuthAuthenticator implements 
         List codeCreds = session.userCredentialManager().getStoredCredentialsByType(context.getRealm(), context.getUser(), KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE);
         List timeCreds = session.userCredentialManager().getStoredCredentialsByType(context.getRealm(), context.getUser(), KeycloakSmsConstants.USR_CRED_MDL_SMS_EXP_TIME);
 
+        logger.info("Num stored creds: " + codeCreds.size());
+
         CredentialModel expectedCode = (CredentialModel) codeCreds.get(0);
         CredentialModel expTimeString = (CredentialModel) timeCreds.get(0);
 
-        logger.debug("Expected code = " + expectedCode + "    entered code = " + enteredCode);
+        logger.info("Expected code = " + expectedCode.getCredentialData() + "    entered code = " + enteredCode);
 
         if (expectedCode != null) {
             result = enteredCode.equals(expectedCode.getCredentialData()) ? CODE_STATUS.VALID : CODE_STATUS.INVALID;
             long now = new Date().getTime();
 
-            logger.debug("Valid code expires in " + (Long.parseLong(expTimeString.getSecretData()) - now) + " ms");
+            logger.info("Valid code expires in " + (Long.parseLong(expTimeString.getSecretData()) - now) + " ms");
             if (result == CODE_STATUS.VALID) {
                 if (Long.parseLong(expTimeString.getSecretData()) < now) {
-                    logger.debug("Code is expired !!");
+                    logger.info("Code is expired !!");
                     result = CODE_STATUS.EXPIRED;
                 }
             }
         }
-        logger.debug("result : " + result);
+        logger.info("result : " + result);
         return result;
     }
     @Override
