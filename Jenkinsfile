@@ -30,8 +30,8 @@ pipeline {
         PATH="${env.JAVA_HOME}/bin:${tool 'nodejs-12'}/bin:${env.PATH}"
         ORG_GRADLE_PROJECT_uniflyVersionTargetBranch="${env.BRANCH_NAME}"
         UNIFLY_ARTIFACTORY = credentials('unifly-artifactory')
-        ORG_GRADLE_PROJECT_artifactoryUser = "$UNIFLY_ARTIFACTORY_USR"
-        ORG_GRADLE_PROJECT_artifactoryPassword = "$UNIFLY_ARTIFACTORY_PSW"
+        artifactory_user = "$UNIFLY_ARTIFACTORY_USR"
+        artifactory_password = "$UNIFLY_ARTIFACTORY_PSW"
     }
 
     stages {
@@ -45,9 +45,7 @@ pipeline {
         stage('Publish') {
             when { not { changeRequest() } }
             steps {
-                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'unifly-artifactory', passwordVariable: 'artifactory_password', usernameVariable: 'artifactory_user']]) {
                   sh "./mvnw -s settings.xml deploy"
-                }
             }
         }
     }
