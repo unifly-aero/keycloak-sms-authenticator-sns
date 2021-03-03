@@ -70,10 +70,6 @@
           <artifactId>bcpkix-jdk15on</artifactId>
           <groupId>org.bouncycastle</groupId>
         </exclusion>
-        <exclusion>
-          <artifactId>jackson-databind</artifactId>
-          <groupId>com.fasterxml.jackson.core</groupId>
-        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -103,7 +99,7 @@
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-services</artifactId>
-      <version>10.0.2</version>
+      <version>11.0.2</version>
       <scope>provided</scope>
       <exclusions>
         <exclusion>
@@ -113,10 +109,6 @@
         <exclusion>
           <artifactId>jakarta.json</artifactId>
           <groupId>org.glassfish</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jboss-servlet-api_4.0_spec</artifactId>
-          <groupId>org.jboss.spec.javax.servlet</groupId>
         </exclusion>
         <exclusion>
           <artifactId>twitter4j-core</artifactId>
@@ -139,8 +131,8 @@
           <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>jackson-annotations</artifactId>
-          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-datatype-jdk8</artifactId>
+          <groupId>com.fasterxml.jackson.datatype</groupId>
         </exclusion>
         <exclusion>
           <artifactId>javase</artifactId>
@@ -165,10 +157,6 @@
         <exclusion>
           <artifactId>keycloak-common</artifactId>
           <groupId>org.keycloak</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jackson-databind</artifactId>
-          <groupId>com.fasterxml.jackson.core</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -207,19 +195,31 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+  <distributionManagement>
+    <repository>
+      <uniqueVersion>false</uniqueVersion>
+      <id>release</id>
+      <name>Unifly Release Repository</name>
+      <url>https://artifactory.unifly.aero/artifactory/ext-release-local</url>
+    </repository>
+    <snapshotRepository>
+      <id>snapshot</id>
+      <name>Unifly Snapshot Repository</name>
+      <url>https://artifactory.unifly.aero/artifactory/ext-snapshot-local</url>
+    </snapshotRepository>
+  </distributionManagement>
   <properties>
-    <version.picketbox>5.0.2.Final</version.picketbox>
-    <version.wildfly>18.0.1.Final</version.wildfly>
-    <version.aws-java-sdk-sns>1.11.548</version.aws-java-sdk-sns>
-    <version.libphonenumber>8.11.2</version.libphonenumber>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <version.httpclient>4.5.11</version.httpclient>
     <version.jboss-logging>3.4.1.Final</version.jboss-logging>
-    <version.notify-client>3.15.1-RELEASE</version.notify-client>
-    <version.commons-lang>2.6</version.commons-lang>
+    <version.httpclient>4.5.11</version.httpclient>
     <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.release>11</maven.compiler.release>
-    <version.keycloak>10.0.2</version.keycloak>
+    <version.keycloak>11.0.2</version.keycloak>
+    <version.commons-lang>2.6</version.commons-lang>
+    <version.aws-java-sdk-sns>1.11.548</version.aws-java-sdk-sns>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <version.wildfly>18.0.1.Final</version.wildfly>
+    <version.libphonenumber>8.11.2</version.libphonenumber>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <version.notify-client>3.15.1-RELEASE</version.notify-client>
+    <version.picketbox>5.0.2.Final</version.picketbox>
   </properties>
 </project>
