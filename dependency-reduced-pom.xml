@@ -3,7 +3,10 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>six.six</groupId>
   <artifactId>keycloak-sms-authenticator-sns</artifactId>
-  <version>2.1.0</version>
+  <version>2.2.0-SNAPSHOT</version>
+  <scm>
+    <connection>scm:git:https://github.com/unifly-aero/keycloak-sms-authenticator-sns.git</connection>
+  </scm>
   <build>
     <plugins>
       <plugin>
@@ -55,7 +58,7 @@
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-core</artifactId>
-      <version>10.0.2</version>
+      <version>11.0.2</version>
       <scope>provided</scope>
       <exclusions>
         <exclusion>
@@ -75,7 +78,7 @@
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-server-spi</artifactId>
-      <version>10.0.2</version>
+      <version>11.0.2</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -182,7 +185,7 @@
       <dependency>
         <groupId>org.keycloak.bom</groupId>
         <artifactId>keycloak-spi-bom</artifactId>
-        <version>10.0.2</version>
+        <version>11.0.2</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -209,6 +212,7 @@
     </snapshotRepository>
   </distributionManagement>
   <properties>
+    <maven.compiler.release>11</maven.compiler.release>
     <version.jboss-logging>3.4.1.Final</version.jboss-logging>
     <version.httpclient>4.5.11</version.httpclient>
     <maven.compiler.source>1.8</maven.compiler.source>

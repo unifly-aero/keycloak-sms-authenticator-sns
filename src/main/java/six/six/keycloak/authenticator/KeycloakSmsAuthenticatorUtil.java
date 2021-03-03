@@ -18,6 +18,7 @@ import six.six.gateway.aws.snsclient.SnsNotificationService;
 import six.six.gateway.govuk.notify.NotifySMSService;
 import six.six.gateway.lyrasms.LyraSMSService;
 import six.six.gateway.openvox.OpenVoxNotificationService;
+import six.six.gateway.stub.LoggingStubSmsService;
 import six.six.keycloak.EnvSubstitutor;
 import six.six.keycloak.KeycloakSmsConstants;
 
@@ -198,6 +199,9 @@ public class KeycloakSmsAuthenticatorUtil {
                     break;
                 case OPENVOX:
                     smsService = new OpenVoxNotificationService(endpoint, openVOXport);
+                    break;
+                case LOGGING_STUB:
+                    smsService = new LoggingStubSmsService();
                     break;
                 default:
                     smsService = new SnsNotificationService();
