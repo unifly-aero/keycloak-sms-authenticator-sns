@@ -219,6 +219,7 @@
     <version.notify-client>3.15.1-RELEASE</version.notify-client>
     <version.commons-lang>2.6</version.commons-lang>
     <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.release>11</maven.compiler.release>
     <version.keycloak>10.0.2</version.keycloak>
   </properties>
 </project>
