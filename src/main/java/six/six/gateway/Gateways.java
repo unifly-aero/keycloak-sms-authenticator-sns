@@ -7,5 +7,6 @@ public enum Gateways {
     AMAZON_SNS,
     GOVUK_NOTIFY,
     LYRA_SMS,
-    OPENVOX
+    OPENVOX,
+    LOGGING_STUB
 }
