@@ -8,5 +8,6 @@ public enum Gateways {
     GOVUK_NOTIFY,
     LYRA_SMS,
     OPENVOX,
+    TWILIO,
     LOGGING_STUB
 }

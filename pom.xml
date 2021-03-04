@@ -143,6 +143,11 @@
             <artifactId>notifications-java-client</artifactId>
             <version>${version.notify-client}</version>
         </dependency>
+        <dependency>
+          <groupId>com.twilio.sdk</groupId>
+          <artifactId>twilio</artifactId>
+          <version>8.8.0</version>
+        </dependency>
     </dependencies>
     <repositories>
         <repository>
