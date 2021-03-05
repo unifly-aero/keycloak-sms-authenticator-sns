@@ -84,13 +84,20 @@ public class KeycloakSmsAuthenticatorFactory implements AuthenticatorFactory, Co
         property.setName(KeycloakSmsConstants.CONF_PRP_SMS_CLIENTTOKEN);
         property.setLabel("Username");
         property.setType(ProviderConfigProperty.STRING_TYPE);
-        property.setHelpText("AWS Client Token or LyraSMS User. Not used for GOV.UK Notify");
+        property.setHelpText("Twilio username");
         configProperties.add(property);
 
         property = new ProviderConfigProperty();
         property.setName(KeycloakSmsConstants.CONF_PRP_SMS_CLIENTSECRET);
-        property.setLabel("Client secret");
-        property.setHelpText("AWS Client Secret or LyraSMS Password. Not used for GOV.UK Notify");
+        property.setLabel("Password");
+        property.setHelpText("Twilio password");
+        property.setType(ProviderConfigProperty.STRING_TYPE);
+        configProperties.add(property);
+
+        property = new ProviderConfigProperty();
+        property.setName(KeycloakSmsConstants.CONF_PRP_SMS_FROM_PHONE_NUMBER);
+        property.setLabel("From phone number");
+        property.setHelpText("The phone number Twilio is going to use to send the SMS");
         property.setType(ProviderConfigProperty.STRING_TYPE);
         configProperties.add(property);
 

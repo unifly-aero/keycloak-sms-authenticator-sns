@@ -7,7 +7,6 @@ import com.google.i18n.phonenumbers.Phonenumber;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
-import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.theme.Theme;
@@ -27,7 +26,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
-import java.util.Set;
 
 /**
  * Created by joris on 18/11/2016.
@@ -168,6 +166,7 @@ public class KeycloakSmsAuthenticatorUtil {
 
         String smsUsr = EnvSubstitutor.envSubstitutor.replace(getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_CLIENTTOKEN));
         String smsPwd = EnvSubstitutor.envSubstitutor.replace(getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_CLIENTSECRET));
+        String twilioFromPhoneNumber = EnvSubstitutor.envSubstitutor.replace(getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_FROM_PHONE_NUMBER));
         String gateway = getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_GATEWAY);
 
         // LyraSMS properties
@@ -205,7 +204,7 @@ public class KeycloakSmsAuthenticatorUtil {
                     smsService = new LoggingStubSmsService();
                     break;
               case TWILIO:
-                    smsService = new TwilioSmsService();
+                    smsService = new TwilioSmsService(twilioFromPhoneNumber);
                     break;
                 default:
                     smsService = new SnsNotificationService();
