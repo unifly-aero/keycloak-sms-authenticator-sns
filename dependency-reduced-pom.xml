@@ -168,16 +168,6 @@
       <artifactId>httpclient</artifactId>
       <version>4.5.11</version>
       <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>httpcore</artifactId>
-          <groupId>org.apache.httpcomponents</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>commons-codec</artifactId>
-          <groupId>commons-codec</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
   </dependencies>
   <dependencyManagement>
