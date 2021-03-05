@@ -59,6 +59,12 @@ public class KeycloakSmsAuthenticator extends BasicAuthAuthenticator implements 
     public void authenticate(AuthenticationFlowContext context) {
         logger.debug("authenticate called ... context = " + context);
         UserModel user = context.getUser();
+
+        if (!"SMS".equals(user.getFirstAttribute("mfa"))) {
+          context.success();
+          return;
+        }
+
         AuthenticatorConfigModel config = context.getAuthenticatorConfig();
 
         System.err.println("IS NULL? " + (config == null));

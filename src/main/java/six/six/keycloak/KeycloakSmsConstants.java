@@ -23,6 +23,7 @@ public class KeycloakSmsConstants {
     // User/Credential
     public static final String CONF_PRP_SMS_CLIENTTOKEN = "sms-auth.sms.clienttoken";
     public static final String CONF_PRP_SMS_CLIENTSECRET = "sms-auth.sms.clientsecret";
+    public static final String CONF_PRP_SMS_FROM_PHONE_NUMBER = "sms-auth.sms.fromPhoneNumber";
 
     // User credentials (used to persist the sent sms code + expiration time cluster wide)
     public static final String USR_CRED_MDL_SMS_CODE = "sms-auth.code";
