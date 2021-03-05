@@ -89,7 +89,9 @@ public class KeycloakSmsAuthenticator extends BasicAuthAuthenticator implements 
 
                 storeSMSCode(context, code, new Date().getTime() + (ttl * 1000)); // s --> ms
 
-                Response challenge = context.form().createForm("sms-validation.ftl");
+                String obfuscatedMobile = mobileNumber.replaceAll(".(?=.{4})", "*");
+
+                Response challenge = context.form().setAttribute("mobileNumber", obfuscatedMobile).createForm("sms-validation.ftl");
 //                context.challenge(challenge);
                 if (KeycloakSmsAuthenticatorUtil.sendSmsCode(mobileNumber, code, context)) {
                     context.challenge(challenge);
