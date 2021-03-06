@@ -89,9 +89,7 @@ public class KeycloakSmsAuthenticator extends BasicAuthAuthenticator implements 
 
                 storeSMSCode(context, code, new Date().getTime() + (ttl * 1000)); // s --> ms
 
-                String obfuscatedMobile = mobileNumber.replaceAll("(?<=.{3}).(?=.{2})", "*");
-
-                Response challenge = context.form().setAttribute("mobileNumber", obfuscatedMobile).createForm("sms-validation.ftl");
+                Response challenge = context.form().setAttribute("mobileNumber", getObfuscatedMobile(mobileNumber)).createForm("sms-validation.ftl");
 //                context.challenge(challenge);
                 if (KeycloakSmsAuthenticatorUtil.sendSmsCode(mobileNumber, code, context)) {
                     context.challenge(challenge);
@@ -122,15 +120,25 @@ public class KeycloakSmsAuthenticator extends BasicAuthAuthenticator implements 
         }
     }
 
+    private String getObfuscatedMobile(String mobileNumber) {
+        if (mobileNumber == null) {
+            return "";
+        }
+        return mobileNumber.replaceAll("(?<=.{3}).(?=.{2})", "*");
+    }
+
     @Override
     public void action(AuthenticationFlowContext context) {
         logger.debug("action called ... context = " + context);
         CODE_STATUS status = validateCode(context);
         Response challenge = null;
+        String mobileNumber = getMobileNumber(context.getUser());
+        String obfuscatedMobile = getObfuscatedMobile(mobileNumber);
         switch (status) {
             case EXPIRED:
                 challenge = context.form()
                         .setError("sms-auth.code.expired")
+                        .setAttribute("mobileNumber", obfuscatedMobile)
                         .createForm("sms-validation.ftl");
                 context.failureChallenge(AuthenticationFlowError.EXPIRED_CODE, challenge);
                 break;
@@ -143,6 +151,7 @@ public class KeycloakSmsAuthenticator extends BasicAuthAuthenticator implements 
                 } else if (context.getExecution().getRequirement() == AuthenticationExecutionModel.Requirement.REQUIRED) {
                     challenge = context.form()
                             .setError("sms-auth.code.invalid")
+                            .setAttribute("mobileNumber", obfuscatedMobile)
                             .createForm("sms-validation.ftl");
                     context.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, challenge);
                 } else {

@@ -202,18 +202,18 @@
     </snapshotRepository>
   </distributionManagement>
   <properties>
+    <version.picketbox>5.0.2.Final</version.picketbox>
+    <version.wildfly>18.0.1.Final</version.wildfly>
+    <version.aws-java-sdk-sns>1.11.548</version.aws-java-sdk-sns>
+    <version.libphonenumber>8.11.2</version.libphonenumber>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>11</maven.compiler.release>
-    <version.jboss-logging>3.4.1.Final</version.jboss-logging>
     <version.httpclient>4.5.11</version.httpclient>
+    <version.jboss-logging>3.4.1.Final</version.jboss-logging>
+    <version.notify-client>3.15.1-RELEASE</version.notify-client>
+    <version.commons-lang>2.6</version.commons-lang>
     <maven.compiler.source>1.8</maven.compiler.source>
     <version.keycloak>11.0.2</version.keycloak>
-    <version.commons-lang>2.6</version.commons-lang>
-    <version.aws-java-sdk-sns>1.11.548</version.aws-java-sdk-sns>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <version.wildfly>18.0.1.Final</version.wildfly>
-    <version.libphonenumber>8.11.2</version.libphonenumber>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <version.notify-client>3.15.1-RELEASE</version.notify-client>
-    <version.picketbox>5.0.2.Final</version.picketbox>
   </properties>
 </project>
