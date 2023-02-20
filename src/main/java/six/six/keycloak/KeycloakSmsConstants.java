@@ -4,6 +4,11 @@ package six.six.keycloak;
  * Created by joris on 18/11/2016.
  */
 public class KeycloakSmsConstants {
+
+    private KeycloakSmsConstants() {
+        throw new IllegalStateException("Constants class");
+    }
+
     public static final String ATTR_MOBILE = "mobile_number";
     public static final String ATTR_MOBILE_VERIFIED = "mobile_number_verified";
     public static final String VERIFY_MOBILENUMBER_KEY = "VERIFY_MOBILENUMBER_KEY";

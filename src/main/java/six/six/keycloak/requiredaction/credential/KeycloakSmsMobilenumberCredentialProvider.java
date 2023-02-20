@@ -1,18 +1,22 @@
 package six.six.keycloak.requiredaction.credential;
 
+import java.util.Optional;
+import java.util.stream.Stream;
 import org.keycloak.common.util.Time;
-import org.keycloak.credential.*;
+import org.keycloak.credential.CredentialInput;
+import org.keycloak.credential.CredentialInputUpdater;
+import org.keycloak.credential.CredentialInputValidator;
+import org.keycloak.credential.CredentialModel;
+import org.keycloak.credential.CredentialProvider;
+import org.keycloak.credential.CredentialTypeMetadata;
+import org.keycloak.credential.CredentialTypeMetadataContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.cache.CachedUserModel;
 import org.keycloak.models.cache.OnUserCache;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import org.keycloak.models.cache.UserCache;
 
 /**
  * Created by nickpack on 15/08/2017.
@@ -27,35 +31,31 @@ public class KeycloakSmsMobilenumberCredentialProvider implements CredentialProv
         this.session = session;
     }
 
-    public CredentialModel getSecret(RealmModel realm, UserModel user) {
-        CredentialModel secret = null;
+    public Optional<CredentialModel> getSecret(UserModel user) {
         if (user instanceof CachedUserModel) {
             CachedUserModel cached = (CachedUserModel)user;
-            secret = (CredentialModel)cached.getCachedWith().get(CACHE_KEY);
-
+            return Optional.of((CredentialModel)cached.getCachedWith().get(CACHE_KEY));
         } else {
-            List<CredentialModel> creds = session.userCredentialManager().getStoredCredentialsByType(realm, user, MOBILE_NUMBER);
-            if (!creds.isEmpty()) secret = creds.get(0);
+            return user.credentialManager().getStoredCredentialsByTypeStream(MOBILE_NUMBER).findFirst();
         }
-        return secret;
     }
 
     @Override
 	public CredentialModel createCredential(RealmModel realm, UserModel user, CredentialModel credInput) {
     	if (!MOBILE_NUMBER.equals(credInput.getType())) return null;
-        
+
     	CredentialModel secret = new CredentialModel();
-        List<CredentialModel> creds = session.userCredentialManager().getStoredCredentialsByType(realm, user, MOBILE_NUMBER);
+        Optional<CredentialModel> creds = user.credentialManager().getStoredCredentialsByTypeStream(MOBILE_NUMBER).findFirst();
         if (creds.isEmpty()) {
             secret.setType(MOBILE_NUMBER);
             secret.setSecretData(credInput.getSecretData());
             secret.setCreatedDate(Time.currentTimeMillis());
-            session.userCredentialManager().createCredential(realm ,user, secret);
+            user.credentialManager().createStoredCredential(secret);
         } else {
-            creds.get(0).setSecretData(credInput.getSecretData());
-            session.userCredentialManager().updateCredential(realm, user, creds.get(0));
+            creds.get().setSecretData(credInput.getSecretData());
+            user.credentialManager().updateStoredCredential(creds.get());
         }
-        session.userCache().evict(realm, user);
+        session.getProvider(UserCache.class).evict(realm, user);
         return secret;
 	}
 
@@ -64,39 +64,36 @@ public class KeycloakSmsMobilenumberCredentialProvider implements CredentialProv
         if (!MOBILE_NUMBER.equals(input.getType())) return false;
         if (!(input instanceof UserCredentialModel)) return false;
         UserCredentialModel credInput = (UserCredentialModel) input;
-        List<CredentialModel> creds = session.userCredentialManager().getStoredCredentialsByType(realm, user, MOBILE_NUMBER);
+        Optional<CredentialModel> creds = user.credentialManager().getStoredCredentialsByTypeStream(MOBILE_NUMBER).findFirst();
         if (creds.isEmpty()) {
             CredentialModel secret = new CredentialModel();
             secret.setType(MOBILE_NUMBER);
             secret.setSecretData(credInput.getChallengeResponse());
             secret.setCreatedDate(Time.currentTimeMillis());
-            session.userCredentialManager().createCredential(realm ,user, secret);
+            user.credentialManager().createStoredCredential(secret);
         } else {
-            creds.get(0).setSecretData(credInput.getChallengeResponse());
-            session.userCredentialManager().updateCredential(realm, user, creds.get(0));
+            creds.get().setSecretData(credInput.getChallengeResponse());
+            user.credentialManager().updateStoredCredential(creds.get());
         }
-        session.userCache().evict(realm, user);
+        session.getProvider(UserCache.class).evict(realm, user);
         return true;
     }
 
     @Override
     public void disableCredentialType(RealmModel realm, UserModel user, String credentialType) {
         if (!MOBILE_NUMBER.equals(credentialType)) return;
-        session.userCredentialManager().disableCredentialType(realm, user, credentialType);
-        session.userCache().evict(realm, user);
+        user.credentialManager().disableCredentialType(credentialType);
+        session.getProvider(UserCache.class).evict(realm, user);
 
     }
 
     @Override
-    public Set<String> getDisableableCredentialTypes(RealmModel realm, UserModel user) {
-        if (!session.userCredentialManager().getStoredCredentialsByType(realm, user, MOBILE_NUMBER).isEmpty()) {
-            Set<String> set = new HashSet<>();
-            set.add(MOBILE_NUMBER);
-            return set;
+    public Stream<String> getDisableableCredentialTypesStream(RealmModel realm, UserModel user) {
+        if (user.credentialManager().getStoredCredentialsByTypeStream(MOBILE_NUMBER).findAny().isPresent()) {
+            return Stream.of(MOBILE_NUMBER);
         } else {
-            return Collections.EMPTY_SET;
+            return Stream.empty();
         }
-
     }
 
     @Override
@@ -107,7 +104,7 @@ public class KeycloakSmsMobilenumberCredentialProvider implements CredentialProv
     @Override
     public boolean isConfiguredFor(RealmModel realm, UserModel user, String credentialType) {
         if (!MOBILE_NUMBER.equals(credentialType)) return false;
-        return getSecret(realm, user) != null;
+        return getSecret(user).isPresent();
     }
 
     @Override
@@ -115,15 +112,16 @@ public class KeycloakSmsMobilenumberCredentialProvider implements CredentialProv
         if (!MOBILE_NUMBER.equals(input.getType())) return false;
         if (!(input instanceof UserCredentialModel)) return false;
 
-        String secret = getSecret(realm, user).getSecretData();
+        String secretData = getSecret(user).map(CredentialModel::getSecretData).orElse(null);
 
-        return secret != null && ((UserCredentialModel)input).getChallengeResponse().equals(secret);
+        return secretData != null && ((UserCredentialModel)input).getChallengeResponse().equals(secretData);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void onCache(RealmModel realm, CachedUserModel user, UserModel delegate) {
-        List<CredentialModel> creds = session.userCredentialManager().getStoredCredentialsByType(realm, user, MOBILE_NUMBER);
-        if (!creds.isEmpty()) user.getCachedWith().put(CACHE_KEY, creds.get(0));
+        user.credentialManager().getStoredCredentialsByTypeStream(MOBILE_NUMBER).findFirst()
+            .ifPresent(creds -> user.getCachedWith().put(CACHE_KEY, creds));
     }
 
     @Override
@@ -139,7 +137,7 @@ public class KeycloakSmsMobilenumberCredentialProvider implements CredentialProv
 
 	@Override
 	public boolean deleteCredential(RealmModel realm, UserModel user, String credentialId) {
-		return session.userCredentialManager().removeStoredCredential(realm, user, credentialId);
+		return user.credentialManager().removeStoredCredentialById(credentialId);
     }
 
 	@Override
@@ -155,7 +153,13 @@ public class KeycloakSmsMobilenumberCredentialProvider implements CredentialProv
 
     @Override
     public CredentialTypeMetadata getCredentialTypeMetadata(CredentialTypeMetadataContext credentialTypeMetadataContext) {
-        CredentialTypeMetadata metadata = CredentialTypeMetadata.builder().removeable(false).category(CredentialTypeMetadata.Category.TWO_FACTOR).displayName("SMS Authentication").type("OTP").helpText("Help").build(session);
-        return metadata;
+        return CredentialTypeMetadata.builder()
+            .removeable(false)
+            .category(CredentialTypeMetadata.Category.TWO_FACTOR)
+            .displayName("SMS Authentication")
+            .type("OTP")
+            .helpText("Help")
+            .build(session);
     }
+
 }

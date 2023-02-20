@@ -2,11 +2,9 @@ package six.six.gateway.twilio;
 
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
-import com.twilio.rest.api.v2010.account.Message.Status;
 import com.twilio.type.PhoneNumber;
 import org.jboss.logging.Logger;
 import six.six.gateway.SMSService;
-import six.six.keycloak.authenticator.KeycloakSmsAuthenticatorUtil;
 
 public class TwilioSmsService implements SMSService {
   private static Logger logger = Logger.getLogger(TwilioSmsService.class);

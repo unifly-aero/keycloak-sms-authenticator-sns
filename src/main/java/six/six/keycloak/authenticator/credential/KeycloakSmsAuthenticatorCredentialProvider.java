@@ -1,17 +1,22 @@
 package six.six.keycloak.authenticator.credential;
 
+import java.util.Optional;
+import java.util.stream.Stream;
 import org.keycloak.common.util.Time;
-import org.keycloak.credential.*;
+import org.keycloak.credential.CredentialInput;
+import org.keycloak.credential.CredentialInputUpdater;
+import org.keycloak.credential.CredentialInputValidator;
+import org.keycloak.credential.CredentialModel;
+import org.keycloak.credential.CredentialProvider;
+import org.keycloak.credential.CredentialTypeMetadata;
+import org.keycloak.credential.CredentialTypeMetadataContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.cache.CachedUserModel;
 import org.keycloak.models.cache.OnUserCache;
+import org.keycloak.models.cache.UserCache;
 import six.six.keycloak.KeycloakSmsConstants;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Created by nickpack on 09/08/2017.
@@ -24,21 +29,14 @@ public class KeycloakSmsAuthenticatorCredentialProvider implements CredentialPro
     public KeycloakSmsAuthenticatorCredentialProvider(KeycloakSession session) {
         this.session = session;
     }
-    
-    private UserCredentialStore getCredentialStore() {
-        return session.userCredentialManager();
-    }
 
-    private CredentialModel getSecret(RealmModel realm, UserModel user) {
-        CredentialModel secret = null;
+    private Optional<CredentialModel> getSecret(UserModel user) {
         if (user instanceof CachedUserModel) {
             CachedUserModel cached = (CachedUserModel) user;
-            secret = (CredentialModel) cached.getCachedWith().get(CACHE_KEY);
+            return Optional.of((CredentialModel) cached.getCachedWith().get(CACHE_KEY));
         } else {
-            List<CredentialModel> creds = session.userCredentialManager().getStoredCredentialsByType(realm, user, KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE);
-            if (!creds.isEmpty()) secret = creds.get(0);
+            return user.credentialManager().getStoredCredentialsByTypeStream(KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE).findFirst();
         }
-        return secret;
     }
 
 
@@ -46,38 +44,36 @@ public class KeycloakSmsAuthenticatorCredentialProvider implements CredentialPro
     public boolean updateCredential(RealmModel realm, UserModel user, CredentialInput input) {
         if (!KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE.equals(input.getType())) return false;
         if (!(input instanceof CredentialInput)) return false;
-        List<CredentialModel> creds = session.userCredentialManager().getStoredCredentialsByType(realm, user, KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE);
+        Optional<CredentialModel> creds = user.credentialManager().getStoredCredentialsByTypeStream(KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE).findFirst();
         if (creds.isEmpty()) {
             CredentialModel secret = new CredentialModel();
             secret.setType(KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE);
             secret.setSecretData(input.getChallengeResponse());
             secret.setCreatedDate(Time.currentTimeMillis());
-            session.userCredentialManager().createCredential(realm, user, secret);
+            user.credentialManager().createStoredCredential(secret);
         } else {
-            creds.get(0).setSecretData(input.getChallengeResponse());
-            session.userCredentialManager().updateCredential(realm, user, creds.get(0));
+            creds.get().setSecretData(input.getChallengeResponse());
+            user.credentialManager().updateStoredCredential(creds.get());
         }
-        session.userCache().evict(realm, user);
+        session.getProvider(UserCache.class).evict(realm, user);
         return true;
     }
 
     @Override
     public void disableCredentialType(RealmModel realm, UserModel user, String credentialType) {
         if (!KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE.equals(credentialType)) return;
-        session.userCredentialManager().disableCredentialType(realm, user, credentialType);
-        session.userCache().evict(realm, user);
+
+        user.credentialManager().disableCredentialType(credentialType);
+        session.getProvider(UserCache.class).evict(realm, user);
     }
 
     @Override
-    public Set<String> getDisableableCredentialTypes(RealmModel realm, UserModel user) {
-        if (!session.userCredentialManager().getStoredCredentialsByType(realm, user, KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE).isEmpty()) {
-            Set<String> set = new HashSet<>();
-            set.add(KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE);
-            return set;
+    public Stream<String> getDisableableCredentialTypesStream(RealmModel realm, UserModel user) {
+        if (user.credentialManager().getStoredCredentialsByTypeStream(KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE).findAny().isPresent()) {
+            return Stream.of(KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE);
         } else {
-            return Collections.<String>emptySet();
+            return Stream.empty();
         }
-
     }
 
     @Override
@@ -87,7 +83,7 @@ public class KeycloakSmsAuthenticatorCredentialProvider implements CredentialPro
 
     @Override
     public boolean isConfiguredFor(RealmModel realm, UserModel user, String credentialType) {
-        return KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE.equals(credentialType) && getSecret(realm, user) != null;
+        return KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE.equals(credentialType) && getSecret(user).isPresent();
     }
 
     @Override
@@ -95,17 +91,16 @@ public class KeycloakSmsAuthenticatorCredentialProvider implements CredentialPro
         if (!KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE.equals(input.getType())) return false;
         if (!(input instanceof SmsOtpCredentialModel)) return false;
 
-        String secret = getSecret(realm, user).getSecretData();
+        String secretData = getSecret(user).map(CredentialModel::getSecretData).orElse(null);
 
-        return secret != null && ((SmsOtpCredentialModel) input).getCredentialData().equals(secret);
+        return secretData != null && ((SmsOtpCredentialModel) input).getCredentialData().equals(secretData);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void onCache(RealmModel realm, CachedUserModel user, UserModel delegate) {
-        List<CredentialModel> creds = session.userCredentialManager().getStoredCredentialsByType(realm, user, KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE);
-        if (!creds.isEmpty()) {
-            user.getCachedWith().put(CACHE_KEY, creds.get(0));
-        }
+        user.credentialManager().getStoredCredentialsByTypeStream(KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE).findFirst()
+            .ifPresent(creds -> user.getCachedWith().put(CACHE_KEY, creds));
     }
 
 	@Override
@@ -115,7 +110,7 @@ public class KeycloakSmsAuthenticatorCredentialProvider implements CredentialPro
 
 	@Override
 	public boolean deleteCredential(RealmModel realm, UserModel user, String credentialId) {
-		return getCredentialStore().removeStoredCredential(realm, user, credentialId);
+		return user.credentialManager().removeStoredCredentialById(credentialId);
 	}
 
 	@Override
@@ -125,8 +120,13 @@ public class KeycloakSmsAuthenticatorCredentialProvider implements CredentialPro
 
     @Override
     public CredentialTypeMetadata getCredentialTypeMetadata(CredentialTypeMetadataContext credentialTypeMetadataContext) {
-        CredentialTypeMetadata metadata = CredentialTypeMetadata.builder().removeable(false).category(CredentialTypeMetadata.Category.TWO_FACTOR).helpText("Help").displayName("SMS Authentication").type("otp").build(session);
-        return metadata;
+        return CredentialTypeMetadata.builder()
+            .removeable(false)
+            .category(CredentialTypeMetadata.Category.TWO_FACTOR)
+            .helpText("Help")
+            .displayName("SMS Authentication")
+            .type("otp")
+            .build(session);
     }
 
     @Override
@@ -134,7 +134,7 @@ public class KeycloakSmsAuthenticatorCredentialProvider implements CredentialPro
 		if (credentialModel.getCreatedDate() == null) {
             credentialModel.setCreatedDate(Time.currentTimeMillis());
         }
-        return getCredentialStore().createCredential(realm, user, credentialModel);
+        return user.credentialManager().createStoredCredential(credentialModel);
 	}
 
 }
