@@ -1,31 +1,25 @@
 package six.six.keycloak.authenticator;
 
-
-import com.google.i18n.phonenumbers.NumberParseException;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber;
-import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+import java.io.IOException;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.Random;
 import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.theme.Theme;
 import org.keycloak.theme.ThemeProvider;
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
+import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import six.six.gateway.Gateways;
 import six.six.gateway.SMSService;
-import six.six.gateway.aws.snsclient.SnsNotificationService;
-import six.six.gateway.govuk.notify.NotifySMSService;
-import six.six.gateway.lyrasms.LyraSMSService;
-import six.six.gateway.openvox.OpenVoxNotificationService;
 import six.six.gateway.stub.LoggingStubSmsService;
 import six.six.gateway.twilio.TwilioSmsService;
 import six.six.keycloak.EnvSubstitutor;
 import six.six.keycloak.KeycloakSmsConstants;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
-import java.util.Random;
 
 /**
  * Created by joris on 18/11/2016.
@@ -34,14 +28,12 @@ public class KeycloakSmsAuthenticatorUtil {
 
     private static Logger logger = Logger.getLogger(KeycloakSmsAuthenticatorUtil.class);
 
-    public static String getAttributeValue(UserModel user, String attributeName) {
-        String result = null;
-        List<String> values = user.getAttribute(attributeName);
-        if (values != null && values.size() > 0) {
-            result = values.get(0);
-        }
+    private KeycloakSmsAuthenticatorUtil() {
+        throw new IllegalStateException("Utility class");
+    }
 
-        return result;
+    public static Optional<String> getAttributeValue(UserModel user, String attributeName) {
+        return user.getAttributeStream(attributeName).findFirst();
     }
 
     public static String getConfigString(AuthenticatorConfigModel config, String configName) {
@@ -164,13 +156,13 @@ public class KeycloakSmsAuthenticatorUtil {
         // Send an SMS
         KeycloakSmsAuthenticatorUtil.logger.debug("Sending " + code + "  to mobileNumber " + mobileNumber);
 
-        String smsUsr = EnvSubstitutor.envSubstitutor.replace(getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_CLIENTTOKEN));
-        String smsPwd = EnvSubstitutor.envSubstitutor.replace(getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_CLIENTSECRET));
-        String twilioFromPhoneNumber = EnvSubstitutor.envSubstitutor.replace(getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_FROM_PHONE_NUMBER));
+        String smsUsr = EnvSubstitutor.envStrSubstitutor.replace(getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_CLIENTTOKEN));
+        String smsPwd = EnvSubstitutor.envStrSubstitutor.replace(getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_CLIENTSECRET));
+        String twilioFromPhoneNumber = EnvSubstitutor.envStrSubstitutor.replace(getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_FROM_PHONE_NUMBER));
         String gateway = getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_GATEWAY);
 
         // LyraSMS properties
-        String endpoint = EnvSubstitutor.envSubstitutor.replace(getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_GATEWAY_ENDPOINT));
+        String endpoint = EnvSubstitutor.envStrSubstitutor.replace(getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_GATEWAY_ENDPOINT));
         boolean isProxy = getConfigBoolean(config, KeycloakSmsConstants.PROXY_ENABLED);
 
 
@@ -191,15 +183,6 @@ public class KeycloakSmsAuthenticatorUtil {
         try {
             Gateways g = Gateways.valueOf(gateway);
             switch(g) {
-                case LYRA_SMS:
-                    smsService = new LyraSMSService(endpoint,isProxy);
-                    break;
-                case GOVUK_NOTIFY:
-                    smsService = new NotifySMSService(notifyApiKey, notifyTemplate);
-                    break;
-                case OPENVOX:
-                    smsService = new OpenVoxNotificationService(endpoint, openVOXport);
-                    break;
                 case LOGGING_STUB:
                     smsService = new LoggingStubSmsService();
                     break;
@@ -207,7 +190,7 @@ public class KeycloakSmsAuthenticatorUtil {
                     smsService = new TwilioSmsService(twilioFromPhoneNumber);
                     break;
                 default:
-                    smsService = new SnsNotificationService();
+                    smsService = new LoggingStubSmsService();
             }
             result=smsService.send(checkMobileNumber(setDefaultCountryCodeIfZero(mobileNumber, getMessage(context, KeycloakSmsConstants.MSG_MOBILE_PREFIX_DEFAULT), getMessage(context, KeycloakSmsConstants.MSG_MOBILE_PREFIX_CONDITION))), smsText, smsUsr, smsPwd);
           return result;

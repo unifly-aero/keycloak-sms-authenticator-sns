@@ -4,7 +4,6 @@ import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
-import org.keycloak.authentication.ConfigurableAuthenticatorFactory;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
@@ -22,7 +21,7 @@ import java.util.stream.Stream;
  * SMS validation Input
  * Created by joris on 11/11/2016.
  */
-public class KeycloakSmsAuthenticatorFactory implements AuthenticatorFactory, ConfigurableAuthenticatorFactory {
+public class KeycloakSmsAuthenticatorFactory implements AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "sms-authentication";
 
@@ -30,14 +29,14 @@ public class KeycloakSmsAuthenticatorFactory implements AuthenticatorFactory, Co
     private static final KeycloakSmsAuthenticator SINGLETON = new KeycloakSmsAuthenticator();
 
 
-    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
-    		AuthenticationExecutionModel.Requirement.REQUIRED,
+    protected static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
+    	AuthenticationExecutionModel.Requirement.REQUIRED,
         AuthenticationExecutionModel.Requirement.ALTERNATIVE,
         AuthenticationExecutionModel.Requirement.DISABLED,
         AuthenticationExecutionModel.Requirement.CONDITIONAL
     };
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
         ProviderConfigProperty property;
@@ -65,7 +64,7 @@ public class KeycloakSmsAuthenticatorFactory implements AuthenticatorFactory, Co
         property.setLabel("SMS gateway");
         property.setHelpText("Select SMS gateway");
         property.setType(ProviderConfigProperty.LIST_TYPE);
-        property.setDefaultValue(Gateways.AMAZON_SNS);
+        property.setDefaultValue(Gateways.LOGGING_STUB);
         property.setOptions(Stream.of(Gateways.values())
                 .map(Enum::name)
                 .collect(Collectors.toList()));

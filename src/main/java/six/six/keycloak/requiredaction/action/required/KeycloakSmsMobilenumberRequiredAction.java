@@ -1,17 +1,16 @@
 package six.six.keycloak.requiredaction.action.required;
 
+import static six.six.keycloak.authenticator.KeycloakSmsAuthenticatorUtil.isPhoneNumberValid;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.ws.rs.core.Response;
 import org.jboss.logging.Logger;
 import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.models.UserModel;
 import six.six.keycloak.KeycloakSmsConstants;
 import six.six.keycloak.MobileNumberHelper;
-
-import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.List;
-
-import static six.six.keycloak.authenticator.KeycloakSmsAuthenticatorUtil.isPhoneNumberValid;
 
 /**
  * Created by nickpack on 15/08/2017.

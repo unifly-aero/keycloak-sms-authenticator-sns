@@ -14,8 +14,12 @@ public class EnvSubstitutor {
 
     public static final String VAULT_PREFIX="VAULT::";
 
-    public static final StrSubstitutor envSubstitutor = new StrSubstitutor(new EnvLookUp());
+    public static final StrSubstitutor envStrSubstitutor = new StrSubstitutor(new EnvLookUp());
     private static Logger logger = Logger.getLogger(EnvSubstitutor.class);
+
+    private EnvSubstitutor() {
+        throw new IllegalStateException("Utility class");
+    }
     private static class EnvLookUp extends StrLookup {
 
         @Override
