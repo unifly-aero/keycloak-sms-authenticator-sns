@@ -88,15 +88,17 @@ public class KeycloakSmsAuthenticator extends BasicAuthAuthenticator implements 
 
                 storeSMSCode(context, code, new Date().getTime() + (ttl * 1000)); // s --> ms
 
-                try (Response challenge = context.form().setAttribute(MOBILE_NUMBER_ATTRIBUTE, getObfuscatedMobile(mobileNumber)).createForm(SMS_VALIDATION_FTL)){
-                    if (KeycloakSmsAuthenticatorUtil.sendSmsCode(mobileNumber, code, context)) {
-                        context.challenge(challenge);
-                    } else {
-                        Response challenge2 = context.form()
-                                .setError("sms-auth.not.send")
-                                .createForm("sms-validation-error.ftl");
-                        context.failureChallenge(AuthenticationFlowError.INTERNAL_ERROR, challenge2);
-                    }
+                if (KeycloakSmsAuthenticatorUtil.sendSmsCode(mobileNumber, code, context)) {
+
+                    context.challenge(context.form()
+                        .setAttribute(MOBILE_NUMBER_ATTRIBUTE, getObfuscatedMobile(mobileNumber))
+                        .createForm(SMS_VALIDATION_FTL));
+
+                } else {
+                    Response challenge2 = context.form()
+                            .setError("sms-auth.not.send")
+                            .createForm("sms-validation-error.ftl");
+                    context.failureChallenge(AuthenticationFlowError.INTERNAL_ERROR, challenge2);
                 }
 
             } else {
@@ -212,7 +214,7 @@ public class KeycloakSmsAuthenticator extends BasicAuthAuthenticator implements 
     protected CODE_STATUS validateCode(AuthenticationFlowContext context) {
         CODE_STATUS result = CODE_STATUS.INVALID;
 
-        logger.info("validateCode called ... ");
+        logger.debug("validateCode called ... ");
         MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();
         String enteredCode = formData.getFirst(KeycloakSmsConstants.ANSW_SMS_CODE);
 
@@ -224,13 +226,13 @@ public class KeycloakSmsAuthenticator extends BasicAuthAuthenticator implements 
         CredentialModel expectedCode = codeCreds.findFirst().orElse(null);
         CredentialModel expTimeString = timeCreds.findFirst().orElse(null);
 
-        logger.info("Expected code = " + expectedCode != null ? expectedCode.getCredentialData() : "null" + ", entered code = " + enteredCode);
+        logger.debug("Expected code = " + expectedCode != null ? expectedCode.getCredentialData() : "null" + ", entered code = " + enteredCode);
 
         if (expectedCode != null && expTimeString != null) {
             result = enteredCode.equals(expectedCode.getCredentialData()) ? CODE_STATUS.VALID : CODE_STATUS.INVALID;
             long now = new Date().getTime();
 
-            logger.info("Valid code expires in " + (Long.parseLong(expTimeString.getSecretData()) - now) + " ms");
+            logger.debug("Valid code expires in " + (Long.parseLong(expTimeString.getSecretData()) - now) + " ms");
             if (result == CODE_STATUS.VALID) {
                 if (Long.parseLong(expTimeString.getSecretData()) < now) {
                     logger.info("Code is expired !!");
@@ -238,7 +240,7 @@ public class KeycloakSmsAuthenticator extends BasicAuthAuthenticator implements 
                 }
             }
         }
-        logger.info("result : " + result);
+        logger.debug("result : " + result);
         return result;
     }
     @Override

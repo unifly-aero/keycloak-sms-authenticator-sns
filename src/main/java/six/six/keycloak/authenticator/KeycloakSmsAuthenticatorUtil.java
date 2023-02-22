@@ -7,6 +7,7 @@ import java.util.Random;
 import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.models.AuthenticatorConfigModel;
+import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
 import org.keycloak.theme.Theme;
 import org.keycloak.theme.ThemeProvider;
@@ -134,15 +135,13 @@ public class KeycloakSmsAuthenticatorUtil {
         String result=null;
 
         try {
-            ThemeProvider themeProvider = context.getSession().getProvider(ThemeProvider.class, "folder");
+            KeycloakSession session = context.getSession();
+            Theme theme = session.theme().getTheme(Theme.Type.LOGIN);
+            Locale locale = session.getContext().resolveLocale(context.getUser());
 
-            Theme currentTheme = themeProvider.getTheme(/*context.getRealm().getLoginTheme()*/ "base", Theme.Type.LOGIN);
-            Locale locale = context.getSession().getContext().resolveLocale(context.getUser());
+            logger.info("theme: " + theme != null ? theme.getName() : "null" + ", locale: "+ locale + ", key: " + key);
 
-            result = currentTheme.getMessages(locale).getProperty(key);
-
-            System.err.println("ALIVSE");
-
+            result = theme.getMessages(locale).getProperty(key);
         }catch (IOException e){
             logger.warn(key + "not found in messages");
         }
