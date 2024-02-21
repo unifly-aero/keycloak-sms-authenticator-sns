@@ -26,8 +26,8 @@ pipeline {
     environment {
         GIT_REPO = 'https://github.com/unifly-aero/keycloak-sms-authenticator-sns.git'
         CREDENTIALS_ID = 'unifly-jenkins'
-        JAVA_HOME="${tool 'openjdk-11'}"
-        PATH="${env.JAVA_HOME}/bin:${tool 'nodejs-12'}/bin:${env.PATH}"
+        JAVA_HOME="${tool 'openjdk-17'}"
+        PATH="${env.JAVA_HOME}/bin:${tool 'nodejs-20'}/bin:${env.PATH}"
         ORG_GRADLE_PROJECT_uniflyVersionTargetBranch="${env.BRANCH_NAME}"
         UNIFLY_ARTIFACTORY = credentials('unifly-artifactory')
         artifactory_user = "$UNIFLY_ARTIFACTORY_USR"

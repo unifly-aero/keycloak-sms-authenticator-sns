@@ -4,7 +4,7 @@ import static six.six.keycloak.authenticator.KeycloakSmsAuthenticatorUtil.isPhon
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
 import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.authentication.RequiredActionProvider;

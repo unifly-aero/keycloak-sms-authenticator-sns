@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
+import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.CredentialValidator;
-import org.keycloak.authentication.authenticators.challenge.BasicAuthAuthenticator;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.models.AuthenticationExecutionModel;
@@ -28,7 +28,7 @@ import six.six.keycloak.requiredaction.action.required.KeycloakSmsMobilenumberRe
 /**
  * Created by joris on 11/11/2016.
  */
-public class KeycloakSmsAuthenticator extends BasicAuthAuthenticator implements CredentialValidator<KeycloakSmsAuthenticatorCredentialProvider> {
+public class KeycloakSmsAuthenticator implements Authenticator, CredentialValidator<KeycloakSmsAuthenticatorCredentialProvider> {
 
     private static final String SMS_VALIDATION_FTL = "sms-validation.ftl";
     private static final String MOBILE_NUMBER_ATTRIBUTE = "mobileNumber";
