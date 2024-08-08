@@ -22,7 +22,7 @@ class TwilioRestClientFactoryTest {
     }
     @Test
     void testGetRestClient_returnsProxyTwilioClient_whenEnvParamSet() throws IllegalAccessException {
-        System.setProperty("HTTPS_PROXY", "localhost:12345");
+        System.setProperty("TWILIO_HTTPS_PROXY", "localhost:12345");
         Twilio.init("twi", "lio");
         TwilioRestClient client = TwilioRestClientFactory.getRestClient("john", "secret");
         NetworkHttpClient networkHttpClient = (NetworkHttpClient) client.getHttpClient();

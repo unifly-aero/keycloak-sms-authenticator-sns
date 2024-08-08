@@ -9,7 +9,7 @@ public class TwilioRestClientFactory {
     
     private static Logger logger = Logger.getLogger(TwilioRestClientFactory.class);
     
-    private static final String HTTPS_PROXY = "HTTPS_PROXY_TWILIO";
+    private static final String HTTPS_PROXY = "TWILIO_HTTPS_PROXY";
     
     private TwilioRestClientFactory() {
         
