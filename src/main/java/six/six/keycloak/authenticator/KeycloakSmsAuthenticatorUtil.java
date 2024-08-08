@@ -1,5 +1,9 @@
 package six.six.keycloak.authenticator;
 
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
+import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Optional;
@@ -10,11 +14,6 @@ import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
 import org.keycloak.theme.Theme;
-import org.keycloak.theme.ThemeProvider;
-import com.google.i18n.phonenumbers.NumberParseException;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber;
-import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import six.six.gateway.Gateways;
 import six.six.gateway.SMSService;
 import six.six.gateway.stub.LoggingStubSmsService;
@@ -28,6 +27,7 @@ import six.six.keycloak.KeycloakSmsConstants;
 public class KeycloakSmsAuthenticatorUtil {
 
     private static Logger logger = Logger.getLogger(KeycloakSmsAuthenticatorUtil.class);
+    private static volatile TwilioSmsService twilioSmsService;
 
     private KeycloakSmsAuthenticatorUtil() {
         throw new IllegalStateException("Utility class");
@@ -155,27 +155,11 @@ public class KeycloakSmsAuthenticatorUtil {
         // Send an SMS
         KeycloakSmsAuthenticatorUtil.logger.debug("Sending " + code + "  to mobileNumber " + mobileNumber);
 
-        String smsUsr = EnvSubstitutor.envStrSubstitutor.replace(getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_CLIENTTOKEN));
-        String smsPwd = EnvSubstitutor.envStrSubstitutor.replace(getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_CLIENTSECRET));
-        String twilioFromPhoneNumber = EnvSubstitutor.envStrSubstitutor.replace(getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_FROM_PHONE_NUMBER));
         String gateway = getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_GATEWAY);
-
-        // LyraSMS properties
-        String endpoint = EnvSubstitutor.envStrSubstitutor.replace(getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_GATEWAY_ENDPOINT));
-        boolean isProxy = getConfigBoolean(config, KeycloakSmsConstants.PROXY_ENABLED);
-
-
-        // GOV.UK Notify properties
-        String notifyApiKey = System.getenv(KeycloakSmsConstants.NOTIFY_API_KEY);
-        String notifyTemplate = System.getenv(KeycloakSmsConstants.NOTIFY_TEMPLATE_ID);
 
         // Create the SMS message body
         String template = getMessage(context, KeycloakSmsConstants.CONF_PRP_SMS_TEXT);
         String smsText = createMessage(template, code, mobileNumber);
-
-        //OpenVOX properties
-        String openVOXport = getConfigString(config, KeycloakSmsConstants.CONF_PRP_OPENVOX_PORT, "1");
-
 
         boolean result;
         SMSService smsService;
@@ -186,17 +170,27 @@ public class KeycloakSmsAuthenticatorUtil {
                     smsService = new LoggingStubSmsService();
                     break;
               case TWILIO:
-                    smsService = new TwilioSmsService(twilioFromPhoneNumber);
+                    smsService = getTwilioSmsService(config);
                     break;
                 default:
                     smsService = new LoggingStubSmsService();
             }
-            result=smsService.send(checkMobileNumber(setDefaultCountryCodeIfZero(mobileNumber, getMessage(context, KeycloakSmsConstants.MSG_MOBILE_PREFIX_DEFAULT), getMessage(context, KeycloakSmsConstants.MSG_MOBILE_PREFIX_CONDITION))), smsText, smsUsr, smsPwd);
+            result=smsService.send(checkMobileNumber(setDefaultCountryCodeIfZero(mobileNumber, getMessage(context, KeycloakSmsConstants.MSG_MOBILE_PREFIX_DEFAULT), getMessage(context, KeycloakSmsConstants.MSG_MOBILE_PREFIX_CONDITION))), smsText);
           return result;
        } catch(Exception e) {
             logger.error("Fail to send SMS " ,e );
             return false;
         }
+    }
+
+    private static synchronized SMSService getTwilioSmsService(AuthenticatorConfigModel config) {
+        if (twilioSmsService == null) {
+            String twilioFromPhoneNumber = EnvSubstitutor.envStrSubstitutor.replace(getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_FROM_PHONE_NUMBER));
+            String smsUsr = EnvSubstitutor.envStrSubstitutor.replace(getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_CLIENTTOKEN));
+            String smsPwd = EnvSubstitutor.envStrSubstitutor.replace(getConfigString(config, KeycloakSmsConstants.CONF_PRP_SMS_CLIENTSECRET));
+            twilioSmsService = new TwilioSmsService(twilioFromPhoneNumber, smsUsr, smsPwd);
+        }
+        return twilioSmsService;
     }
 
     static String getSmsCode(long nrOfDigits) {

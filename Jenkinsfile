@@ -43,7 +43,7 @@ pipeline {
         }
 
         stage('Publish') {
-            when { not { changeRequest() } }
+            when { not { changeRequest() } }					
             steps {
                   sh "./mvnw -s settings.xml deploy"
             }
