@@ -6,7 +6,7 @@
 
     <groupId>six.six</groupId>
     <artifactId>keycloak-sms-authenticator-sns</artifactId>
-    <version>4.2.0-SNAPSHOT</version>
+    <version>4.2.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -16,16 +16,21 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <version.keycloak>23.0.2</version.keycloak>
-        <version.wildfly>26.1.1.Final</version.wildfly>
         <version.httpclient>4.5.13</version.httpclient>
         <version.jboss-logging>3.5.3.Final</version.jboss-logging>
         <version.libphonenumber>8.11.2</version.libphonenumber>
         <version.commons-lang>2.6</version.commons-lang>
-        <version.picketbox>5.0.2.Final</version.picketbox>
-        <version.notify-client>3.15.1-RELEASE</version.notify-client>
     </properties>
     <build>
         <plugins>
+            <plugin>
+	            <artifactId>maven-surefire-plugin</artifactId>
+	            <version>3.1.2</version>
+	        </plugin>
+	        <plugin>
+	            <artifactId>maven-failsafe-plugin</artifactId>
+	            <version>3.1.2</version>
+	        </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -62,13 +67,14 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <dependency>
-                <groupId>org.wildfly.bom</groupId>
-                <artifactId>wildfly</artifactId>
-                <version>${version.wildfly}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
+                    
+	        <dependency>
+	            <groupId>org.junit</groupId>
+	            <artifactId>junit-bom</artifactId>
+	            <version>5.10.3</version>
+	            <type>pom</type>
+	            <scope>import</scope>
+	        </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -124,20 +130,21 @@
             <version>${version.commons-lang}</version>
         </dependency>
         <dependency>
-            <groupId>org.picketbox</groupId>
-            <artifactId>picketbox</artifactId>
-            <version>${version.picketbox}</version>
-        </dependency>
-        <dependency>
-            <groupId>uk.gov.service.notify</groupId>
-            <artifactId>notifications-java-client</artifactId>
-            <version>${version.notify-client}</version>
-        </dependency>
-        <dependency>
           <groupId>com.twilio.sdk</groupId>
           <artifactId>twilio</artifactId>
-          <version>8.8.0</version>
+          <version>10.4.1</version>
         </dependency>
+
+        <dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-runner</artifactId>
+			<scope>test</scope>
+		</dependency>
     </dependencies>
     <repositories>
         <repository>
