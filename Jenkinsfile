@@ -29,9 +29,10 @@ pipeline {
         JAVA_HOME="${tool 'openjdk-17'}"
         PATH="${env.JAVA_HOME}/bin:${tool 'nodejs-20'}/bin:${env.PATH}"
         ORG_GRADLE_PROJECT_uniflyVersionTargetBranch="${env.BRANCH_NAME}"
-        UNIFLY_ARTIFACTORY = credentials('unifly-artifactory')
-        artifactory_user = "$UNIFLY_ARTIFACTORY_USR"
-        artifactory_password = "$UNIFLY_ARTIFACTORY_PSW"
+
+        UNIFLY_JFROG_ARTIFACTORY= credentials('artifactory-jenkins-cloud')
+        uniflyJfrogUsername="$UNIFLY_JFROG_ARTIFACTORY_USR"
+        uniflyJfrogPassword="$UNIFLY_JFROG_ARTIFACTORY_PSW"
     }
 
     stages {
@@ -59,3 +60,4 @@ pipeline {
         }
     }
 }
+
