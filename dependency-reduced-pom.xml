@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>six.six</groupId>
   <artifactId>keycloak-sms-authenticator-sns</artifactId>
-  <version>4.2.1-SNAPSHOT</version>
+  <version>5.0.0-SNAPSHOT</version>
   <scm>
     <connection>scm:git:https://github.com/unifly-aero/keycloak-sms-authenticator-sns.git</connection>
   </scm>
@@ -66,12 +66,16 @@
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-core</artifactId>
-      <version>23.0.2</version>
+      <version>26.5.4</version>
       <scope>provided</scope>
       <exclusions>
         <exclusion>
           <artifactId>keycloak-common</artifactId>
           <groupId>org.keycloak</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jackson-datatype-jdk8</artifactId>
+          <groupId>com.fasterxml.jackson.datatype</groupId>
         </exclusion>
         <exclusion>
           <artifactId>microprofile-openapi-api</artifactId>
@@ -82,14 +86,20 @@
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-server-spi</artifactId>
-      <version>23.0.2</version>
+      <version>26.5.4</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-server-spi-private</artifactId>
-      <version>23.0.2</version>
+      <version>26.5.4</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>opentelemetry-api</artifactId>
+          <groupId>io.opentelemetry</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jboss.logging</groupId>
@@ -100,7 +110,7 @@
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-services</artifactId>
-      <version>23.0.2</version>
+      <version>26.5.4</version>
       <scope>provided</scope>
       <exclusions>
         <exclusion>
@@ -116,6 +126,10 @@
           <groupId>org.twitter4j</groupId>
         </exclusion>
         <exclusion>
+          <artifactId>commons-logging-jboss-logging</artifactId>
+          <groupId>org.jboss.logging</groupId>
+        </exclusion>
+        <exclusion>
           <artifactId>jakarta.ws.rs-api</artifactId>
           <groupId>jakarta.ws.rs</groupId>
         </exclusion>
@@ -128,11 +142,15 @@
           <groupId>jakarta.xml.soap</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>resteasy-multipart-provider</artifactId>
-          <groupId>org.jboss.resteasy</groupId>
+          <artifactId>owasp-java-html-sanitizer</artifactId>
+          <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>owasp-java-html-sanitizer</artifactId>
+          <artifactId>java8-shim</artifactId>
+          <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>java10-shim</artifactId>
           <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
         </exclusion>
         <exclusion>
@@ -140,12 +158,20 @@
           <groupId>javax.annotation</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>jackson-datatype-jdk8</artifactId>
-          <groupId>com.fasterxml.jackson.datatype</groupId>
+          <artifactId>jackson-jakarta-rs-yaml-provider</artifactId>
+          <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
         </exclusion>
         <exclusion>
           <artifactId>javase</artifactId>
           <groupId>com.google.zxing</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>titanium-json-ld</artifactId>
+          <groupId>com.apicatalog</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>rdf-urdna</artifactId>
+          <groupId>io.setl</groupId>
         </exclusion>
         <exclusion>
           <artifactId>webauthn4j-core</artifactId>
@@ -156,12 +182,28 @@
           <groupId>com.github.ua-parser</groupId>
         </exclusion>
         <exclusion>
+          <artifactId>snakeyaml</artifactId>
+          <groupId>org.yaml</groupId>
+        </exclusion>
+        <exclusion>
           <artifactId>smallrye-common-annotation</artifactId>
           <groupId>io.smallrye.common</groupId>
         </exclusion>
         <exclusion>
+          <artifactId>keycloak-model-storage-private</artifactId>
+          <groupId>org.keycloak</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>keycloak-config-api</artifactId>
+          <groupId>org.keycloak</groupId>
+        </exclusion>
+        <exclusion>
           <artifactId>keycloak-common</artifactId>
           <groupId>org.keycloak</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jackson-datatype-jdk8</artifactId>
+          <groupId>com.fasterxml.jackson.datatype</groupId>
         </exclusion>
         <exclusion>
           <artifactId>microprofile-openapi-api</artifactId>
@@ -171,8 +213,8 @@
     </dependency>
     <dependency>
       <groupId>org.keycloak</groupId>
-      <artifactId>keycloak-model-legacy</artifactId>
-      <version>23.0.2</version>
+      <artifactId>keycloak-model-storage</artifactId>
+      <version>26.5.4</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -241,7 +283,7 @@
       <dependency>
         <groupId>org.keycloak.bom</groupId>
         <artifactId>keycloak-spi-bom</artifactId>
-        <version>23.0.2</version>
+        <version>26.5.4</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -259,12 +301,12 @@
       <uniqueVersion>false</uniqueVersion>
       <id>release</id>
       <name>Unifly Release Repository</name>
-      <url>https://artifactory.unifly.aero/artifactory/ext-release-local</url>
+      <url>https://unifly.jfrog.io/artifactory/libs-release-local</url>
     </repository>
     <snapshotRepository>
       <id>snapshot</id>
       <name>Unifly Snapshot Repository</name>
-      <url>https://artifactory.unifly.aero/artifactory/ext-snapshot-local</url>
+      <url>https://unifly.jfrog.io/artifactory/libs-snapshot-local</url>
     </snapshotRepository>
   </distributionManagement>
   <properties>
@@ -273,7 +315,7 @@
     <maven.compiler.target>17</maven.compiler.target>
     <version.httpclient>4.5.13</version.httpclient>
     <maven.compiler.source>17</maven.compiler.source>
-    <version.keycloak>23.0.2</version.keycloak>
+    <version.keycloak>26.5.4</version.keycloak>
     <version.libphonenumber>8.11.2</version.libphonenumber>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <version.commons-lang>2.6</version.commons-lang>
