@@ -2,14 +2,14 @@
     <servers>
         <server>
             <id>snapshot</id>
-            <username>${env.uniflyJfrogUsername}</username>
-            <password>${env.uniflyJfrogPassword}</password>
+            <username>${env.uniflyNexusUsername}</username>
+            <password>${env.uniflyNexusPassword}</password>
         </server>
 
         <server>
             <id>release</id>
-            <username>${env.uniflyJfrogUsername}</username>
-            <password>${env.uniflyJfrogPassword}</password>
+            <username>${env.uniflyNexusUsername}</username>
+            <password>${env.uniflyNexusPassword}</password>
         </server>
     </servers>
 </settings>
