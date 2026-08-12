@@ -30,9 +30,9 @@ pipeline {
         PATH="${env.JAVA_HOME}/bin:${tool 'nodejs-20'}/bin:${env.PATH}"
         ORG_GRADLE_PROJECT_uniflyVersionTargetBranch="${env.BRANCH_NAME}"
 
-        UNIFLY_JFROG_ARTIFACTORY= credentials('artifactory-jenkins-cloud')
-        uniflyJfrogUsername="$UNIFLY_JFROG_ARTIFACTORY_USR"
-        uniflyJfrogPassword="$UNIFLY_JFROG_ARTIFACTORY_PSW"
+        UNIFLY_NEXUS = credentials('nexus-artifacts')
+        uniflyNexusUsername="$UNIFLY_NEXUS_USR"
+        uniflyNexusPassword="$UNIFLY_NEXUS_PSW"
     }
 
     stages {
