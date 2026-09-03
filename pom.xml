@@ -16,7 +16,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <version.keycloak>26.5.4</version.keycloak>
-        <version.httpclient>4.5.13</version.httpclient>
+        <version.twilio>13.0.0</version.twilio>
         <version.jboss-logging>3.5.3.Final</version.jboss-logging>
         <version.libphonenumber>8.11.2</version.libphonenumber>
         <version.commons-lang>2.6</version.commons-lang>
@@ -114,12 +114,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>${version.httpclient}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>com.googlecode.libphonenumber</groupId>
             <artifactId>libphonenumber</artifactId>
             <version>${version.libphonenumber}</version>
@@ -132,7 +126,7 @@
         <dependency>
           <groupId>com.twilio.sdk</groupId>
           <artifactId>twilio</artifactId>
-          <version>10.4.1</version>
+          <version>${version.twilio}</version>
         </dependency>
 
         <dependency>

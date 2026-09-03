@@ -96,6 +96,10 @@
       <scope>provided</scope>
       <exclusions>
         <exclusion>
+          <artifactId>httpclient</artifactId>
+          <groupId>org.apache.httpcomponents</groupId>
+        </exclusion>
+        <exclusion>
           <artifactId>opentelemetry-api</artifactId>
           <groupId>io.opentelemetry</groupId>
         </exclusion>
@@ -218,18 +222,6 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.5.13</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>commons-logging</artifactId>
-          <groupId>commons-logging</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
       <version>5.10.3</version>
@@ -301,19 +293,19 @@
       <uniqueVersion>false</uniqueVersion>
       <id>release</id>
       <name>Unifly Release Repository</name>
-      <url>https://unifly.jfrog.io/artifactory/libs-release-local</url>
+      <url>https://artifacts.unifly.tech/repository/maven-release-local</url>
     </repository>
     <snapshotRepository>
       <id>snapshot</id>
       <name>Unifly Snapshot Repository</name>
-      <url>https://unifly.jfrog.io/artifactory/libs-snapshot-local</url>
+      <url>https://artifacts.unifly.tech/repository/maven-snapshot-local</url>
     </snapshotRepository>
   </distributionManagement>
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
     <version.jboss-logging>3.5.3.Final</version.jboss-logging>
     <maven.compiler.target>17</maven.compiler.target>
-    <version.httpclient>4.5.13</version.httpclient>
+    <version.twilio>13.0.0</version.twilio>
     <maven.compiler.source>17</maven.compiler.source>
     <version.keycloak>26.5.4</version.keycloak>
     <version.libphonenumber>8.11.2</version.libphonenumber>

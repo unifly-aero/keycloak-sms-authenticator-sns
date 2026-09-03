@@ -5,9 +5,10 @@ import static com.twilio.http.HttpClient.DEFAULT_REQUEST_CONFIG;
 import com.twilio.http.HttpClient;
 import com.twilio.http.NetworkHttpClient;
 import com.twilio.http.TwilioRestClient;
-import org.apache.http.HttpHost;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import java.net.URISyntaxException;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.core5.http.HttpHost;
 
 /**
  * copied from https://github.com/twilio/twilio-java/blob/main/advanced-examples/custom-http-client.md
@@ -46,14 +47,19 @@ public class ProxiedTwilioClientCreator {
         connectionManager.setDefaultMaxPerRoute(10);
         connectionManager.setMaxTotal(10 * 2);
 
-        HttpHost proxy = HttpHost.create(proxyString);
+        HttpHost proxy;
+        try {
+            proxy = HttpHost.create(proxyString);
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("invalid twilio proxy: " + proxyString, e);
+        }
 
         HttpClientBuilder clientBuilder = HttpClientBuilder.create();
         
         /*
          * if we ever need to implement connection to proxy with authentication, we need to do something like this:
-        CredentialsProvider credentialsPovider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(new AuthScope("example.com", 80), newUsernamePasswordCredentials("user", "mypass"));
+        BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
+        credsProvider.setCredentials(new AuthScope("example.com", 80), new UsernamePasswordCredentials("user", "mypass".toCharArray()));
         clientBuilder.setDefaultCredentialsProvider(credsProvider)
         */
         
