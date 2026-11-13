@@ -49,6 +49,9 @@
                                     <exclude>jmock:*</exclude>
                                     <exclude>*:xml-apis</exclude>
                                     <exclude>org.apache.maven:lib:tests</exclude>
+                                    <exclude>com.fasterxml.jackson.core:*</exclude>
+                                    <exclude>com.fasterxml.jackson.datatype:jackson-datatype-jdk8</exclude>
+                                    <exclude>com.fasterxml.jackson.datatype:jackson-datatype-jsr310</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>
